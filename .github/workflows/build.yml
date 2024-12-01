@@ -1,0 +1,19 @@
+name: Build OS kernel.elf
+
+on:
+  push:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Python
+        run: sudo apt-get install python3 -y
+
+      - name: Build
+        run: python3 build_cli.py build
