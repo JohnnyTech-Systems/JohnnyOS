@@ -2,6 +2,8 @@
 import os
 import argparse
 import glob
+import subprocess
+import sys
 
 # Ensure snek.py is in the thirdparty/snek directory
 snek_script = 'thirdparty/snek/snek.py'
@@ -35,6 +37,25 @@ ld_flags = [
     '-zmax-page-size=0x1000',
     '-static'
 ]
+
+required_packages = [
+    'gcc',
+    'nasm',
+    'qemu-system-x86',
+    'python3'
+]
+
+def install_packages():
+    print("Installing required packages...")
+    if sys.platform.startswith("linux"):
+        package_manager = "apt-get" if os.path.exists("/usr/bin/apt-get") else "yum"
+        subprocess.check_call(['sudo', package_manager, 'update'])
+        subprocess.check_call(['sudo', package_manager, 'install', '-y'] + required_packages)
+    elif sys.platform == "darwin":
+        subprocess.check_call(['brew', 'install'] + required_packages)
+    else:
+        print("Unsupported OS. Please install the required packages manually.")
+        sys.exit(1)
 
 def build_py():
     for i in initial_py_files:
@@ -94,11 +115,13 @@ def clean():
 
 def main():
     parser = argparse.ArgumentParser(description="Build System for Johnny OS")
-    parser.add_argument('command', choices=['build', 'clean', 'run', 'build_run'], help="Command to execute")
+    parser.add_argument('command', choices=['build', 'clean', 'run', 'build_run', 'install'], help="Command to execute")
 
     args = parser.parse_args()
 
-    if args.command == 'build':
+    if args.command == 'install':
+        install_packages()
+    elif args.command == 'build':
         build_py()
         build_c()
         build_asm()
